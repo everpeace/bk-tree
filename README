@@ -1,0 +1,9 @@
+This is an implementation of BK-Tree, which has competitive characotrs:
+1)It provides effective search in a given metric space.
+2)The structure is very simple.
+3)In pragmatic situation, tree-height is balanced. i.e. height is O(log n) where n is the number of elements in the tree.
+
+More about BK-Tree, see: 
+http://en.wikipedia.org/wiki/BK-tree
+http://blog.notdot.net/2007/4/Damn-Cool-Algorithms-Part-1-BK-Trees
+
