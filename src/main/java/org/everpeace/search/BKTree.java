@@ -5,11 +5,12 @@ import java.util.*;
 /**
  * implementation of BK-Tree.
  * provide effective approximation search in a given metric space.
+ * <p/>
+ * User: everpeace _at_ gmail _dot_ com
+ * Date: 11/03/21
+ * Created by IntelliJ IDEA.
  *
  * @param <E> E must be immutable object type, otherwise search function can't work correctly..
- *            User: everpeace _at_ gmail _dot_ com
- *            Date: 11/03/21
- *            Created by IntelliJ IDEA.
  */
 public class BKTree<E> {
     // eval function of the tree
@@ -43,7 +44,7 @@ public class BKTree<E> {
      * @param distanceFunction eval function.
      * @param root             root element of the tree
      */
-    public BKTree(final Distance distanceFunction, final E root) {
+    public BKTree(final Distance<E> distanceFunction, final E root) {
         this.distanceFunction = distanceFunction;
         this.r = root;
         this.children = new HashMap<Double, BKTree<E>>();
@@ -85,13 +86,14 @@ public class BKTree<E> {
      * @param distance -
      * @return -
      */
+    @SuppressWarnings("unused")
     public Set<E> searchAt(E query, Double distance) {
         Double d = d(r, query);
         Set<E> result = new HashSet<E>();
         Double lo;
         if (d < distance) {
             lo = 0d;
-        } else if (d == distance) {
+        } else if (d.equals(distance)) {
             lo = 0d;
             result.add(r); // found.
         } else {
@@ -155,14 +157,14 @@ public class BKTree<E> {
      * build BK-Tree from a collection of E using comparator as distance function.
      *
      * @param collection a collection of E
-     * @param compar     comparator
+     * @param comparator a comparator
      * @param <E>        type of elements
      * @return BK-Tree<E> containing elements of collection.
      */
-    public static <E> BKTree<E> build(Collection<E> collection, Comparator<E> compar) {
-        assert collection != null && compar != null;
+    public static <E> BKTree<E> build(Collection<E> collection, Comparator<E> comparator) {
+        assert collection != null && comparator != null;
         if (collection.size() > 0) {
-            BKTree<E> tree = new BKTree<E>(compar, null);
+            BKTree<E> tree = new BKTree<E>(comparator, null);
             for (E e : collection) {
                 tree.insert(e);
             }
@@ -221,21 +223,21 @@ public class BKTree<E> {
 
     @Override
     public String toString() {
-        return "height:" + height() + "\n" + stringRepresentaiton(0);
+        return "height:" + height() + "\n" + stringRepresentation(0);
     }
 
-    private String stringRepresentaiton(int tab) {
+    private String stringRepresentation(int tab) {
         StringBuffer buf = new StringBuffer("[" + this.r);
         if (numOfChildren() > 0) {
             buf.append("\n");
         } else {
             buf.append("]");
         }
-        Iterator<Double> iter = children.keySet().iterator();
-        while (iter.hasNext()) {
-            Double i = iter.next();
-            buf.append(indent(tab + 1) + "(" + i + ")" + children.get(i).stringRepresentaiton(tab + 1));
-            if (iter.hasNext()) {
+        Iterator<Double> iterator = children.keySet().iterator();
+        while (iterator.hasNext()) {
+            Double i = iterator.next();
+            buf.append(indent(tab + 1) + "(" + i + ")" + children.get(i).stringRepresentation(tab + 1));
+            if (iterator.hasNext()) {
                 buf.append("\n");
             } else {
                 if (tab > 0) {
@@ -249,7 +251,7 @@ public class BKTree<E> {
     }
 
     private static String indent(int tab) {
-        String indent = "      "; // 6 whitespaces
+        String indent = "      "; // 6 white spaces
         StringBuffer buf = new StringBuffer("");
         for (int i = 0; i < tab; i++) {
             buf.append(indent);
