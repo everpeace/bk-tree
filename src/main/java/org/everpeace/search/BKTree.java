@@ -17,8 +17,7 @@ public class BKTree<E> {
     //root element of the tree
     private E r;
     // child trees, which must have the same distance function of the tree.
-    // (TODO need to be concurrentMap?)
-    private final Map<Integer, BKTree<E>> children;
+    private final Map<Double, BKTree<E>> children;
 
     /**
      * constructor.
@@ -30,12 +29,12 @@ public class BKTree<E> {
      */
     public BKTree(final Comparator<E> distanceFunction, final E root) {
         this.distanceFunction = new Distance<E>() {
-            public int eval(E o1, E o2) {
+            public double eval(E o1, E o2) {
                 return Math.abs(distanceFunction.compare(o1, o2));
             }
         };
         this.r = root;
-        this.children = new HashMap<Integer, BKTree<E>>();
+        this.children = new HashMap<Double, BKTree<E>>();
     }
 
     /**
@@ -47,7 +46,7 @@ public class BKTree<E> {
     public BKTree(final Distance distanceFunction, final E root) {
         this.distanceFunction = distanceFunction;
         this.r = root;
-        this.children = new HashMap<Integer, BKTree<E>>();
+        this.children = new HashMap<Double, BKTree<E>>();
     }
 
     /**
@@ -57,24 +56,25 @@ public class BKTree<E> {
      * @param radius -
      * @return -
      */
-    public Set<E> searchWithin(E query, Integer radius) {
-        Integer d = d(r, query);
+    public Set<E> searchWithin(E query, Double radius) {
+        Double d = d(r, query);
         Set<E> result = new HashSet<E>();
-        Integer lo;
+        Double lo;
         if (d <= radius) {
-            lo = 0;
+            lo = 0d;
             result.add(r); // found
         } else {
             lo = d - radius;
         }
-        Integer hi = d + radius;
+        Double hi = d + radius;
 
         // search children from eval-radius(>=0) to eval+radius.
-        for (int i = lo; i <= hi; i++) {
-            if (children.containsKey(i)) {
-                result.addAll(children.get(i).searchWithin(query, radius));
+        for (Double k : children.keySet()) {
+            if (lo <= k && k <= hi) {
+                result.addAll(children.get(k).searchWithin(query, radius));
             }
         }
+
         return result;
     }
 
@@ -85,24 +85,24 @@ public class BKTree<E> {
      * @param distance -
      * @return -
      */
-    public Set<E> searchAt(E query, Integer distance) {
-        Integer d = d(r, query);
+    public Set<E> searchAt(E query, Double distance) {
+        Double d = d(r, query);
         Set<E> result = new HashSet<E>();
-        Integer lo;
+        Double lo;
         if (d < distance) {
-            lo = 0;
+            lo = 0d;
         } else if (d == distance) {
-            lo = 0;
+            lo = 0d;
             result.add(r); // found.
         } else {
             lo = d - distance;
         }
-        Integer hi = d + distance;
+        Double hi = d + distance;
 
         // search children from eval-distance(>=0) to eval+distance.
-        for (int i = lo; i <= hi; i++) {
-            if (children.containsKey(i)) {
-                result.addAll(children.get(i).searchAt(query, distance));
+        for (Double k : children.keySet()) {
+            if (lo <= k && k <= hi) {
+                result.addAll(children.get(k).searchAt(query, distance));
             }
         }
         return result;
@@ -127,8 +127,8 @@ public class BKTree<E> {
             return true;
         }
 
-        int d_re = d(r, e);
-        if (d_re == 0) return false; // e is already in the tree.
+        Double d_re = d(r, e);
+        if (d_re == 0d) return false; // e is already in the tree.
 
         if (children.containsKey(d_re)) {
             return children.get(d_re).insert(e);
@@ -144,10 +144,10 @@ public class BKTree<E> {
      *
      * @param e1 -
      * @param e2 -
-     * @return
+     * @return -
      */
 
-    private Integer d(E e1, E e2) {
+    private Double d(E e1, E e2) {
         return distanceFunction.eval(e1, e2);
     }
 
@@ -203,7 +203,7 @@ public class BKTree<E> {
             return 1;
         } else {
             List<Integer> childHeights = new ArrayList<Integer>(children.keySet().size());
-            for (Integer d : children.keySet()) {
+            for (Double d : children.keySet()) {
                 childHeights.add(children.get(d).height());
             }
             return Collections.max(childHeights) + 1;
@@ -231,15 +231,15 @@ public class BKTree<E> {
         } else {
             buf.append("]");
         }
-        Iterator<Integer> iter = children.keySet().iterator();
+        Iterator<Double> iter = children.keySet().iterator();
         while (iter.hasNext()) {
-            Integer i = iter.next();
+            Double i = iter.next();
             buf.append(indent(tab + 1) + "(" + i + ")" + children.get(i).stringRepresentaiton(tab + 1));
             if (iter.hasNext()) {
                 buf.append("\n");
             } else {
                 if (tab > 0) {
-                    buf.append("\n" + indent(tab) + space(((int) Math.log10(i)) + 3) + "]");
+                    buf.append("\n" + indent(tab) + space(i.toString().length() + 3) + "]");
                 } else {
                     buf.append("\n]");
                 }
@@ -249,7 +249,7 @@ public class BKTree<E> {
     }
 
     private static String indent(int tab) {
-        String indent = "    "; // 4 whitespaces
+        String indent = "      "; // 6 whitespaces
         StringBuffer buf = new StringBuffer("");
         for (int i = 0; i < tab; i++) {
             buf.append(indent);

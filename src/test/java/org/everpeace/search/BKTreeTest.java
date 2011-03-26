@@ -15,6 +15,31 @@ import static org.junit.Assert.assertTrue;
  * Created by IntelliJ IDEA.
  */
 public class BKTreeTest {
+
+    @Test
+    public void testToString() {
+        TreeSet<String> strings = new TreeSet<String>();
+        int lengthLimit = 10;
+        int numOfData = 30;
+
+        for (int i = 0; i < numOfData; i++) {
+            String st = randomString(1 + (int) (Math.random() * (lengthLimit - 1)));
+            if (!strings.contains(st)) {
+                strings.add(st);
+            } else {
+                i -= 1;//retry
+            }
+        }
+
+        Distance<String> d = new Levenshtein();
+        Long start = System.currentTimeMillis();
+        BKTree<String> bkTree = BKTree.build(strings, d);
+        Long end = System.currentTimeMillis();
+        System.out.println("input data(" + strings.size() + " strings): " + strings);
+        System.out.println("constructed BK-tree:\n" + bkTree);
+        System.out.println("construction time:" + (end - start) + "[ms] (" + numOfData + " strings, height=" + bkTree.height() + ")");
+    }
+
     /**
      * search test for BK-Tree on Integer.
      * distance function is abs..
@@ -42,7 +67,7 @@ public class BKTreeTest {
             }
         });
         long end = System.currentTimeMillis();
-        System.out.println("constuction time:" + (end - start) + "[ms] (" + (dataRadius * 2 + 1) + "integers, height=" + bkTree.height() + ")");
+        System.out.println("construction time:" + (end - start) + "[ms] (" + (dataRadius * 2 + 1) + "integers, height=" + bkTree.height() + ")");
 
         //System.out.println(bkTree)
         double sum = 0;
@@ -57,7 +82,7 @@ public class BKTreeTest {
             // random point [0 .. (dataRadius/2)]
             int radius = (int) (Math.random() * maxRadius);
             start = System.currentTimeMillis();
-            Set<Integer> result = bkTree.searchWithin(query, radius);// query-radius ... query+radius
+            Set<Integer> result = bkTree.searchWithin(query, (double) radius);// query-radius ... query+radius
             end = System.currentTimeMillis();
             //System.out.println("result:" + result);
             assertThat(result.size(), is(2 * radius + 1));
@@ -76,7 +101,7 @@ public class BKTreeTest {
         }
         div /= num;
         div = Math.sqrt(div);
-        System.out.println("average time(" + num + " trials): " + (sum / num) + "[ms]  divergence:" + div);
+        System.out.println("average time(" + num + " trials): " + (sum / num) + "[ms]  standard deviation:" + div + "[ms]");
     }
 
     /**
@@ -124,7 +149,7 @@ public class BKTreeTest {
                 }
             }
             start = System.currentTimeMillis();
-            Set<String> result = bkTree.searchWithin(query, radius);
+            Set<String> result = bkTree.searchWithin(query, (double) radius);
             end = System.currentTimeMillis();
             System.out.print("#" + n + " query:" + query + " radius:" + radius);
 
@@ -142,12 +167,12 @@ public class BKTreeTest {
         }
         div /= num;
         div = Math.sqrt(div);
-        System.out.println("average time(" + num + " trials): " + ave + "[ms]  divergence: " + div);
+        System.out.println("average time(" + num + " trials): " + ave + "[ms]  standard deviation:" + div + "[ms]");
     }
 
     public static class Levenshtein implements Distance<String> {
         @Override
-        public int eval(String x, String y) {
+        public double eval(String x, String y) {
             int len_x = x.length(), len_y = y.length();
             int[][] row = new int[len_x + 1][len_y + 1];
             int i, j;

@@ -19,5 +19,5 @@ public interface Distance<E> {
      * @param e2 an element.
      * @return distance between e1 and e2.
      */
-    int eval(E e1, E e2);
+    double eval(E e1, E e2);
 }
